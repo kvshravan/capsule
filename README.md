@@ -4,3 +4,4 @@
 3. Merge two capsules. Color becomes part of bigger capsule
 4. Global search across capsules
 Trust and Opinion matters.
+Join capsule waitlist
