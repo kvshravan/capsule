@@ -9,17 +9,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:capsule/constants.dart';
 
-class CreateCapsulePage extends StatefulWidget {
+class SignInPage extends StatefulWidget {
   @override
-  State<CreateCapsulePage> createState() => _CreateCapsulePageState();
+  State<SignInPage> createState() => _SignInPageState();
 }
 
-class _CreateCapsulePageState extends State<CreateCapsulePage> {
-  final TextEditingController capsuleNameController = TextEditingController();
+class _SignInPageState extends State<SignInPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,32 +63,12 @@ class _CreateCapsulePageState extends State<CreateCapsulePage> {
                         //   ),
                         // ),
                         Text(
-                          'Create, Join Capsule.',
+                          'Login to Capsule.',
                           style: whiteboldtextStyle,
                         ),
                         SizedBox(height: 30),
                         // Username TextField
-                        TextField(
-                          textCapitalization: TextCapitalization.words,
-                          controller: capsuleNameController,
-                          style: whitetextStyle,
-                          decoration: InputDecoration(
-                            labelText: 'Capsule Name',
-                            labelStyle: TextStyle(color: Colors.white),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Colors
-                                      .white38), // Border color when not focused
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Colors
-                                      .white), // Border color when focused
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 15),
-
+                    
                         TextField(
                           keyboardType: TextInputType.emailAddress,
                           controller: emailController,
@@ -133,29 +110,7 @@ class _CreateCapsulePageState extends State<CreateCapsulePage> {
                             ),
                           ),
                         ),
-                        SizedBox(
-                          height: 15,
-                        ),
-                        // Password TextField
-                        TextField(
-                          controller: confirmPasswordController,
-                          obscureText: true,
-                          style: whitetextStyle,
-                          decoration: InputDecoration(
-                            labelText: 'Confirm Password',
-                            labelStyle: TextStyle(color: Colors.white),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Colors
-                                      .white38), // Border color when not focused
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Colors
-                                      .white), // Border color when focused
-                            ),
-                          ),
-                        ),
+     
                         SizedBox(height: 30),
                         // Login Button
                         ElevatedButton(
@@ -163,26 +118,16 @@ class _CreateCapsulePageState extends State<CreateCapsulePage> {
                             try {
                               openLoadingBottomSheet();
                               // Access text from controllers
-                              String capsuleName =
-                                  capsuleNameController.text.trim();
                               String email = emailController.text.trim();
                               String password = passwordController.text.trim();
-                              String confirmPassword =
-                                 confirmPasswordController.text.trim();
-                              var errorString = await SignUp(email, password, confirmPassword);
+                              var errorString = await SignIn(email, password);
                               if(errorString.isNotEmpty){
                                 Navigator.pop(context);
                                 showSnackbar(errorString, context);
                               }
                               else{
-                              final uid = FirebaseAuth.instance.currentUser!.uid;
-                              final capsuleId = await generateCapsule();
-                              var capsuleNameMap = {'name': capsuleName};
-                              await commitCapsule(capsuleId, capsuleNameMap);
-                              await commitCapsuleUserViceversa(capsuleId, capsuleName, uid, email);
                               Navigator.pop(context);
                               openSuccessBottomSheet();
-                              await Future.delayed(Duration(seconds: 2));
                               // bottomsheet closing
                               Navigator.pop(context);
                               // go back to main-page
@@ -204,7 +149,7 @@ class _CreateCapsulePageState extends State<CreateCapsulePage> {
                               ),
                               shadowColor: Colors.blueAccent),
                           child: Text(
-                            'Create and Join Capsule!',
+                            'Login',
                             style: textStyle,
                           ),
                         ),
@@ -228,7 +173,7 @@ class _CreateCapsulePageState extends State<CreateCapsulePage> {
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10.0))),
         builder: (context) {
-          return loadingBottomSheetWrapper('Creating Capsule...');
+          return loadingBottomSheetWrapper('Logging In...');
         });
   }
 
@@ -240,7 +185,7 @@ class _CreateCapsulePageState extends State<CreateCapsulePage> {
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10.0))),
         builder: (context) {
-          return successBottomSheetWrapper('Capsule created :) Logging you in');
+          return successBottomSheetWrapper('Successfully logged in :)');
         });
   }
 }

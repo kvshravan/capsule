@@ -1,6 +1,10 @@
 import 'package:capsule/auth/loginFunctions.dart';
+import 'package:capsule/backend/capsule.dart';
+import 'package:capsule/screens/signinscreen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:capsule/constants.dart';
+import '../common/bottomsheets.dart';
 import 'createcapsule.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -55,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         //   ),
                         // ),
                         Text(
-                          'Capsule.\nVibe and Trust matter.',
+                          'Capsule.\nVibe,Trust and Opinions matter.',
                           style: whiteboldtextStyle,
                         ),
                         SizedBox(height: 30),
@@ -205,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   PageRouteBuilder(
                                     pageBuilder: (context, animation,
                                             secondaryAnimation) =>
-                                        CreateCapsulePage(),
+                                        SignInPage(),
                                     transitionsBuilder: (context, animation,
                                         secondaryAnimation, child) {
                                       const begin = Offset(1.0, 0.0);
@@ -234,16 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         // Login Button
                         ElevatedButton(
                           onPressed: () async {
-                            // Implement your login logic here
-                            String email = emailController.text;
-                            String password = passwordController.text;
-                            String confirmPassword =
-                                confirmPasswordController.text;
-                            String errorString =
-                                await SignUp(email, password, confirmPassword);
-                            if (errorString.isNotEmpty) {
-                              showSnackbar(errorString, context);
-                            }
+                            joinCapsuleLogic();
                           },
                           style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blueAccent,
@@ -260,7 +255,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: textStyle,
                           ),
                         ),
-                        
                       ],
                     ),
                   ),
@@ -272,9 +266,71 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+
+  void joinCapsuleLogic() async {
+    openLoadingBottomSheet();
+    // just showing off my loading screen
+    await Future.delayed(Duration(seconds: 2));
+    // Implement your login logic here
+    String email = emailController.text;
+    String password = passwordController.text;
+    String confirmPassword = confirmPasswordController.text;
+    final capsuleId = capsuleCodeController.text.trim();
+    final capsuleName = await queryCapsuleName(capsuleId);
+    print(capsuleName);
+    if (capsuleName.isEmpty) {
+      showSnackbar("Oops! Looks like you have wrong Capsule code.", context);
+      stopLoading();
+      return;
+    }
+    stopLoading();
+    showSnackbar("Capsule Exists! Logging in..", context);
+    String errorString = await SignUp(email, password, confirmPassword);
+    if (errorString.isNotEmpty) {
+      showSnackbar(errorString, context);
+      return;
+    }
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await commitCapsuleUserViceversa(capsuleId, capsuleName, uid, email);
+  }
+
+   openLoadingBottomSheet() {
+    return showModalBottomSheet(
+        context: context,
+        isDismissible: false,
+        backgroundColor: Colors.black87,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0))),
+        builder: (context) {
+          return loadingBottomSheetWrapper('Please wait, verifying Capsule.');
+        });
+  }
+
+  stopLoading(){
+    Navigator.pop(context);
+  }
+
+  openSuccessBottomSheet() {
+    return showModalBottomSheet(
+        context: context,
+        isDismissible: false,
+        backgroundColor: Colors.black87,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0))),
+        builder: (context) {
+          return successBottomSheetWrapper('Capsule Exists! Logging in..');
+        });
+  }
 }
 
 void showSnackbar(message, BuildContext context) {
   final scaffold = ScaffoldMessenger.of(context);
-  scaffold.showSnackBar(SnackBar(content: Text(message)));
+  scaffold.showSnackBar(SnackBar(
+      content: Text(
+    message,
+    style: whitethinStyle,
+  )));
+
+
+ 
 }
